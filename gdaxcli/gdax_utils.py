@@ -261,6 +261,10 @@ class Client(object):
     else:
       print('No pending orders')
 
+#account balance of  curruncy cur
+  def bal(self, cur):   
+    return float([x['available'] for x in self._client.get_accounts() if x['currency'] == cur][0])
+
   def order(self, order_type, side, product, size, price,
       skip_confirmation=False):
     """Place an order.
@@ -318,6 +322,19 @@ class Client(object):
       diff = ' (' + colorize('%.2f' % diff, negative) + ')'
 
     total = float(size) * float(price)
+
+#
+# Check if there are enough funds for the order
+    if side == 'buy': 
+        i = 1; req  = total
+    else:
+        i = 0; req = size 
+    den = product.split('-')[i]
+    dbal = self.bal(den) 
+    if dbal < req: 
+        print('Not enough funds: %s %s required, %s available' % (req, den, dbal))
+        return
+
     print('Placing %s order: %s %s %s @ %s%s; total %.2f' % (
         order_type.upper(), colorize(side, lambda side: side == 'buy'), size,
         product, price, diff, total))
